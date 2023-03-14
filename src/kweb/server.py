@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+from pathlib import Path
 
 # NOTE: import db to enable stream format readers
 import klayout.db as db
@@ -9,6 +10,8 @@ import klayout.lay as lay
 from fastapi import WebSocket, Request
 
 from starlette.endpoints import WebSocketEndpoint
+import gdsfactory as gf
+from loguru import logger
 
 host = "localhost"
 port = 8765
@@ -23,7 +26,7 @@ class LayoutViewServerEndpoint(WebSocketEndpoint):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        logger.info("Initialized websocket")
         _params = self.scope["query_string"].decode("utf-8")
         _params_splitted = _params.split("&")
         params = {}
@@ -31,8 +34,14 @@ class LayoutViewServerEndpoint(WebSocketEndpoint):
             key, value = _param.split("=")
             params[key] = value
 
-        self.url = params["gds_file"]
+        print("Params:", params)
+        # self.url = params["gds_file"].replace('/', '\\')
         self.layer_props = params.get("layer_props", None)
+
+        c = gf.get_component(cell_name)
+        gds_path = Path('gds_files') / f"{cell_name}.gds"
+        c.write_gds(gds_path)
+        self.gds_path = gds_path
 
     async def on_connect(self, websocket):
         await websocket.accept()
@@ -189,3 +198,15 @@ class LayoutViewServerEndpoint(WebSocketEndpoint):
 
 # server = LayoutViewServer(layout_url)
 # server.run()
+
+def get_layout_view(cell_name: str):
+    c = gf.get_component(cell_name)
+    gds_path = Path('gds_files') / f"{cell_name}.gds"
+    c.write_gds(str(gds_path))
+    layout_view = lay.LayoutView()
+    layout_view.load_layout(str(gds_path))
+    # if layer_props is not None:
+    #     layout_view.load_layer_props(layer_props)
+    layout_view.max_hier()
+    return layout_view
+

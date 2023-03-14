@@ -4,7 +4,7 @@
 
 ws_url = ws_url.replace("http://","ws://");
 ws_url = ws_url.replace("https://","wss://");
-let url = ws_url + '/ws?' + "gds_file=" + gds_file + "&layer_props=" + layer_props;
+let url = ws_url + '/ws?' + "cell_name=" + cell_name + "&layer_props=" + layer_props;
 console.log(url);
 console.log(layer_props);
 

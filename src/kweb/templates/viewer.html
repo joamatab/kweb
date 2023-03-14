@@ -1,0 +1,34 @@
+{% include 'header.html' %}
+{% include 'navbar.html' %}
+<div class="container" style="margin-top: 1em;">
+    <h1>{{cell_name}}</h1>
+    
+    <div class="viewer-panel">
+        <div class="viewer-panel-sub">
+            <div class="viewer-frame-cell">
+                <div class="menu-left-frame" id="modes"></div>
+                <div class="menu-right-frame" id="menu"></div>
+                <div class="viewer-frame" id="layout-view">
+                    <canvas id="layout_canvas" width="1000" height="800"></canvas>
+                </div>
+            </div>
+            <div class="viewer-layers-cell">
+                <div class="viewer-layers" id="layers"></div>
+            </div>
+        </div>
+    </div>
+    <h2>Parameters</h2>
+    <ul class="list-group">
+        {% for setting_name, setting_value in component.settings.full.items()%}
+        <li class="list-group-item"><p><b>{{setting_name}}:</b> {{setting_value}}</p></li>
+        {% endfor %}
+    </ul>
+</div>
+<script>
+    var canvas = document.getElementById("layout_canvas");
+    var context = canvas.getContext("2d");
+    const img = new Image();
+    img.src = "data:image/jpeg;base64,{{ initial_view | safe }}";
+    img.onload = () => {          context.drawImage(img, 0, 0);        };
+</script>
+{% include 'footer.html' %}
