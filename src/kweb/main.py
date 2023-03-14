@@ -1,13 +1,15 @@
 import base64
 from pathlib import Path
+from typing import Optional
 
 from fastapi import FastAPI, Request
 from starlette.endpoints import WebSocketEndpoint
 from starlette.routing import WebSocketRoute
 from starlette.requests import Request as StRequest
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi import status
 
 from kweb.server import LayoutViewServerEndpoint, get_layout_view
 import gdsfactory as gf
@@ -52,11 +54,14 @@ async def root():
 #             # "layer_props": layer_props,
 #         },
 #     )
-
+LOADED_COMPONENTS = {}
 @app.get("/view/{cell_name}", response_class=HTMLResponse)
-async def view_cell(request: Request, cell_name: str):
-    component = gf.get_component(cell_name)
-    layout_view = get_layout_view(cell_name=cell_name)
+async def view_cell(request: Request, cell_name: str, variant: Optional[str] = None):
+    if variant in LOADED_COMPONENTS:
+        component = LOADED_COMPONENTS[variant]
+    else:
+        component = gf.get_component(cell_name)
+    layout_view = get_layout_view(component)
     pixel_data = layout_view.get_pixels_with_options(1000, 800).to_png_data()
     # pixel_data = layout_view.get_screenshot_pixels().to_png_data()
     b64_data = base64.b64encode(pixel_data).decode("utf-8")
@@ -65,9 +70,19 @@ async def view_cell(request: Request, cell_name: str):
         {
             "request": request,
             "cell_name": str(cell_name),
+            "variant": variant,
             "title": "Viewer",
             "initial_view": b64_data,
             "component": component,
         },
     )
 
+
+@app.post("/update/{cell_name}")
+async def update_cell(request: Request, cell_name: str):
+    data = await request.form()
+    changed_settings = {k: float(v) for k, v in data.items() if v != ''}
+    new_component = gf.get_component({'component': cell_name, 'settings': changed_settings})
+    LOADED_COMPONENTS[new_component.name] = new_component
+    logger.info(data)
+    return RedirectResponse(f"/view/{cell_name}?variant={new_component.name}",  status_code=status.HTTP_302_FOUND)

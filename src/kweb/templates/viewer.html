@@ -2,6 +2,9 @@
 {% include 'navbar.html' %}
 <div class="container" style="margin-top: 1em;">
     <h1>{{cell_name}}</h1>
+    {% if variant %}
+    <h2>({{variant}})</h2>
+    {% endif %}
     
     <div class="viewer-panel">
         <div class="viewer-panel-sub">
@@ -18,11 +21,15 @@
         </div>
     </div>
     <h2>Parameters</h2>
-    <ul class="list-group">
-        {% for setting_name, setting_value in component.settings.full.items()%}
-        <li class="list-group-item"><p><b>{{setting_name}}:</b> {{setting_value}}</p></li>
-        {% endfor %}
-    </ul>
+    <form action="/update/{{cell_name}}" method="POST">
+    <button type="submit" class="btn btn-primary">Update</button>
+    {% for setting_name, setting_value in component.settings.full.items()%}
+        <div class="mb-3">
+            <label for="{{setting_name}}" class="form-label">{{setting_name}}</label>
+            <input type="text" class="form-control" id="{{setting_name}}" name="{{setting_name}}" placeholder="{{setting_value}}">
+        </div>
+    {% endfor %}
+    </form>
 </div>
 <script>
     var canvas = document.getElementById("layout_canvas");

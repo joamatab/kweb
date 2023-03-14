@@ -199,10 +199,9 @@ class LayoutViewServerEndpoint(WebSocketEndpoint):
 # server = LayoutViewServer(layout_url)
 # server.run()
 
-def get_layout_view(cell_name: str):
-    c = gf.get_component(cell_name)
-    gds_path = Path('gds_files') / f"{cell_name}.gds"
-    c.write_gds(str(gds_path))
+def get_layout_view(component: gf.Component):
+    gds_path = Path('gds_files') / f"{component.name}.gds"
+    component.write_gds(str(gds_path))
     layout_view = lay.LayoutView()
     layout_view.load_layout(str(gds_path))
     # if layer_props is not None:
