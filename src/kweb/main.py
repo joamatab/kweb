@@ -2,7 +2,7 @@ import base64
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Form, Request
 from starlette.endpoints import WebSocketEndpoint
 from starlette.routing import WebSocketRoute
 from starlette.requests import Request as StRequest
@@ -29,11 +29,12 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
-@app.get("/")
-async def root():
-    return {
-        "message": "Welcome to kweb visualizer: \n go to http://127.0.0.1:8000/gds/wg"
-    }
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    active_pdk = gf.get_active_pdk()
+    pdk_name = active_pdk.name
+    components = list(active_pdk.cells.keys())
+    return templates.TemplateResponse('index.html', {'request': request, 'title': 'Main', 'pdk_name': pdk_name, 'components': components})
 
 
 # @app.get("/gds", response_class=HTMLResponse)
@@ -86,3 +87,13 @@ async def update_cell(request: Request, cell_name: str):
     LOADED_COMPONENTS[new_component.name] = new_component
     logger.info(data)
     return RedirectResponse(f"/view/{cell_name}?variant={new_component.name}",  status_code=status.HTTP_302_FOUND)
+
+@app.post("/search", response_class=RedirectResponse)
+async def search(name: str = Form(...)):
+    logger.info(f'Searching for {name}...')
+    try:
+        gf.get_component(name)
+    except ValueError:
+        return RedirectResponse("/", status_code=status.HTTP_404_NOT_FOUND)
+    logger.info(f'Successfully found {name}! Redirecting...')
+    return RedirectResponse(f"/view/{name}", status_code=status.HTTP_302_FOUND)

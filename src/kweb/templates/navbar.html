@@ -5,5 +5,11 @@
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+        <div class="collapse navbar-collapse justify-content-end">
+            <form action="/search" method="POST" class="d-flex" style="margin: 0.5em;">
+                <input class="form-control me-2" type="search" placeholder="View a component..." name="name" aria-label="Search">
+                <button class="btn btn-outline-light" type="submit">Search</button>
+            </form>
+        </div>
     </div>
 </nav>
