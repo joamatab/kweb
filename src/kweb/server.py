@@ -41,7 +41,7 @@ class LayoutViewServerEndpoint(WebSocketEndpoint):
         layer_props_filename = 'layer_props.lyp'
         gf.get_active_pdk().layer_views.to_lyp(layer_props_filename)
         self.layer_props = layer_props_filename
-        path_params = args[0]['path_params']
+        # path_params = args[0]['path_params']
         # cell_name = path_params["cell_name"]
         cell_name = params["variant"]
         self.url = f"gds_files/{cell_name}.gds"

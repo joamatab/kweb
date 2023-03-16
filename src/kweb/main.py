@@ -90,7 +90,7 @@ async def view_cell(request: Request, cell_name: str, variant: Optional[str] = N
 @app.post("/update/{cell_name}")
 async def update_cell(request: Request, cell_name: str):
     data = await request.form()
-    changed_settings = {k: float(v) for k, v in data.items() if v != ''}
+    changed_settings = {k: v for k, v in data.items() if v != ''}
     new_component = gf.get_component({'component': cell_name, 'settings': changed_settings})
     LOADED_COMPONENTS[new_component.name] = new_component
     logger.info(data)
