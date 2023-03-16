@@ -38,11 +38,7 @@
 <script>
     var current_url="{{ url }}";
     var cell_variant = "{{ variant or cell_name }}";
-    var canvas = document.getElementById("layout_canvas");
-    var context = canvas.getContext("2d");
-    const img = new Image();
-    img.src = "data:image/jpeg;base64,{{ initial_view | safe }}";
-    img.onload = () => {          context.drawImage(img, 0, 0);        };
+    var initial_image_data = "data:image/jpeg;base64,{{ initial_view | safe }}";
 </script>
 <script src="{{url_for('static', path='/client.js')}}"></script>
 {% include 'footer.html' %}

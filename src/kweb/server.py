@@ -12,6 +12,7 @@ from fastapi import WebSocket, Request
 from starlette.endpoints import WebSocketEndpoint
 import gdsfactory as gf
 from loguru import logger
+import os
 
 host = "localhost"
 port = 8765
@@ -206,13 +207,19 @@ class LayoutViewServerEndpoint(WebSocketEndpoint):
 # server = LayoutViewServer(layout_url)
 # server.run()
 
+def get_layer_properties():
+    layer_props_filename = 'layer_props.lyp'
+    if not os.path.isfile(layer_props_filename):
+        gf.get_active_pdk().layer_views.to_lyp(layer_props_filename)
+    return layer_props_filename
+    
 def get_layout_view(component: gf.Component):
     gds_path = Path('gds_files') / f"{component.name}.gds"
     component.write_gds(str(gds_path))
     layout_view = lay.LayoutView()
     layout_view.load_layout(str(gds_path))
-    # if layer_props is not None:
-    #     layout_view.load_layer_props(layer_props)
+    layer_props = get_layer_properties()
+    layout_view.load_layer_props(layer_props)
     layout_view.max_hier()
     return layout_view
 
