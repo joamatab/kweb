@@ -131,3 +131,4 @@ dmypy.json
 
 *.gds
 src/kweb/img/
+*.lyp

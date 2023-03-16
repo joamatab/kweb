@@ -34,13 +34,20 @@ class LayoutViewServerEndpoint(WebSocketEndpoint):
             key, value = _param.split("=")
             params[key] = value
 
-        print("Params:", params)
+        print("args:", args)
+        print("kwargs:", kwargs)
         # self.url = params["gds_file"].replace('/', '\\')
-        self.layer_props = params.get("layer_props", None)
-
-        c = gf.get_component(cell_name)
+        # self.layer_props = params.get("layer_props", None)
+        layer_props_filename = 'layer_props.lyp'
+        gf.get_active_pdk().layer_views.to_lyp(layer_props_filename)
+        self.layer_props = layer_props_filename
+        path_params = args[0]['path_params']
+        # cell_name = path_params["cell_name"]
+        cell_name = params["variant"]
+        self.url = f"gds_files/{cell_name}.gds"
+        # c = gf.get_component(cell_name)
         gds_path = Path('gds_files') / f"{cell_name}.gds"
-        c.write_gds(gds_path)
+        # c.write_gds(gds_path)
         self.gds_path = gds_path
 
     async def on_connect(self, websocket):

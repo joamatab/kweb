@@ -2,11 +2,13 @@
 //  TODO: shouldn't be explicit here ..
 // let url = 'ws://localhost:8765/ws';
 
-ws_url = ws_url.replace("http://","ws://");
+let ws_url = current_url.replace("http://","ws://");
 ws_url = ws_url.replace("https://","wss://");
-let url = ws_url + '/ws?' + "cell_name=" + cell_name + "&layer_props=" + layer_props;
+ws_url += '/ws?' + "variant=" + cell_variant ;
+//ws_url = 'ws://127.0.0.1/view:8080';
+let url = ws_url;
 console.log(url);
-console.log(layer_props);
+
 
 var canvas = document.getElementById("layout_canvas");
 var context = canvas.getContext("2d");

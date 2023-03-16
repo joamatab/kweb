@@ -2,7 +2,7 @@ import base64
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form, Request, WebSocket
 from starlette.endpoints import WebSocketEndpoint
 from starlette.routing import WebSocketRoute
 from starlette.requests import Request as StRequest
@@ -20,8 +20,8 @@ module_path = Path(__file__).parent.absolute()
 home_path = Path.home() / ".gdsfactory" / "extra"
 home_path.mkdir(exist_ok=True, parents=True)
 
-# app = FastAPI(routes=[WebSocketRoute("/view/ws", endpoint=LayoutViewServerEndpoint)])
-app = FastAPI()
+app = FastAPI(routes=[WebSocketRoute("/view/{cell_name}/ws", endpoint=LayoutViewServerEndpoint)])
+# app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # gdsfiles = StaticFiles(directory=home_path)
@@ -34,7 +34,7 @@ async def root(request: Request):
     active_pdk = gf.get_active_pdk()
     pdk_name = active_pdk.name
     components = list(active_pdk.cells.keys())
-    return templates.TemplateResponse('index.html', {'request': request, 'title': 'Main', 'pdk_name': pdk_name, 'components': components})
+    return templates.TemplateResponse('index.html', {'request': request, 'title': 'Main', 'pdk_name': pdk_name, 'components': sorted(components)})
 
 
 # @app.get("/gds", response_class=HTMLResponse)
@@ -75,6 +75,14 @@ async def view_cell(request: Request, cell_name: str, variant: Optional[str] = N
             "title": "Viewer",
             "initial_view": b64_data,
             "component": component,
+            "url": str(
+                request.url.scheme
+                + "://"
+                + request.url.hostname
+                + ":"
+                + str(request.url.port)
+                + request.url.path
+            ),
         },
     )
 
