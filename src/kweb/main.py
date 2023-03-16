@@ -14,7 +14,7 @@ from fastapi import status
 from kweb.server import LayoutViewServerEndpoint, get_layout_view
 import gdsfactory as gf
 from loguru import logger
-
+import orjson
 
 module_path = Path(__file__).parent.absolute()
 home_path = Path.home() / ".gdsfactory" / "extra"
@@ -86,11 +86,19 @@ async def view_cell(request: Request, cell_name: str, variant: Optional[str] = N
         },
     )
 
-
+def _parse_value(value: str):
+    if value.startswith('{') or value.startswith('['):
+        try:
+            return orjson.loads(value.replace("'", '"'))
+        except orjson.JSONDecodeError as e:
+            raise ValueError(f"Unable to decode parameter value, {value}: {e.msg}")
+    else:
+        return value
+    
 @app.post("/update/{cell_name}")
 async def update_cell(request: Request, cell_name: str):
     data = await request.form()
-    changed_settings = {k: v for k, v in data.items() if v != ''}
+    changed_settings = {k: _parse_value(v) for k, v in data.items() if v != ''}
     new_component = gf.get_component({'component': cell_name, 'settings': changed_settings})
     LOADED_COMPONENTS[new_component.name] = new_component
     logger.info(data)
